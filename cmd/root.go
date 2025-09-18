@@ -11,6 +11,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(GetBuildInfoCmd())
+	rootCmd.AddCommand(GetMD5Cmd())
 }
 
 func Execute() error {
