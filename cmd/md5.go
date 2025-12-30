@@ -5,11 +5,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"os"
+
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/heguangyu1989/celo/pkg/utils"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
-	"os"
 )
 
 func GetMD5Cmd() *cobra.Command {

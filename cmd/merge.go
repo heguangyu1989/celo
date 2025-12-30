@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+
 	"github.com/heguangyu1989/celo/internal/merge"
 	"github.com/spf13/cobra"
 )

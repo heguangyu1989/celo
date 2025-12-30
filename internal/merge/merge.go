@@ -1,13 +1,13 @@
 package merge
 
 import (
-	"errors"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/go-resty/resty/v2"
 	"github.com/heguangyu1989/celo/pkg/config"
 	"github.com/heguangyu1989/celo/pkg/p"
-	"net/http"
-	"strings"
 )
 
 func Merge(srcBranch string, targetBranch string, title string, tags []string) error {
@@ -45,5 +45,5 @@ func Merge(srcBranch string, targetBranch string, title string, tags []string) e
 }
 
 func getHttpStatusErr(resp *resty.Response) error {
-	return errors.New(fmt.Sprintf("request %s error with http code %d body %s", resp.Request.URL, resp.StatusCode(), resp.String()))
+	return fmt.Errorf("request %s error with http code %d body %s", resp.Request.URL, resp.StatusCode(), resp.String())
 }

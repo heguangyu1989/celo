@@ -3,9 +3,10 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -33,6 +34,9 @@ func LoadConfig(path string) error {
 		}
 	} else if ext == ".yaml" || ext == ".yml" {
 		err = yaml.Unmarshal(data, &C)
+		if err != nil {
+			return err
+		}
 	} else {
 		return fmt.Errorf("unsupport file ext : %s", ext)
 	}
@@ -50,6 +54,9 @@ func SaveConfig(path string) error {
 		}
 	} else if ext == ".yaml" || ext == ".yml" {
 		data, err = yaml.Marshal(C)
+		if err != nil {
+			return err
+		}
 	} else {
 		return fmt.Errorf("unsupport file ext : %s", ext)
 	}
