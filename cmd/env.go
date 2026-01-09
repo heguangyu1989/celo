@@ -91,10 +91,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
+	var err error
 	if m.choice != "" {
-		err := os.Remove(filepath.Join(m.rootPath, ".env"))
-		if err != nil {
-			panic(err)
+		if utils.FileExists(filepath.Join(m.rootPath, ".env")) {
+			err := os.Remove(filepath.Join(m.rootPath, ".env"))
+			if err != nil {
+				panic(err)
+			}
 		}
 		err = os.Symlink(filepath.Join(m.rootPath, m.choice), filepath.Join(m.rootPath, ".env"))
 		if err != nil {
