@@ -70,6 +70,41 @@ celo md5 "hello world"
 - `string`: 直接计算字符串的MD5
 - `file`: 计算文件的MD5
 
+### 密码生成
+
+```bash
+# 生成默认的16位密码（包含大小写字母和数字）
+celo password
+
+# 生成指定长度的密码
+celo password --length 20
+
+# 生成包含特殊字符的密码
+celo password --length 20 --special
+
+# 生成多个密码
+celo password --count 5
+
+# 生成指定字符集的密码
+celo password --custom "abc123ABC!@#" --length 12
+
+# 输出为JSON格式
+celo password --count 3 --output json
+
+# 输出为YAML格式
+celo password --count 3 --output yaml
+```
+
+**参数说明：**
+- `--length`: 密码长度（默认16）
+- `--upper`: 包含大写字母（默认true）
+- `--lower`: 包含小写字母（默认true）
+- `--digits`: 包含数字（默认true）
+- `--special`: 包含特殊字符（默认false）
+- `--custom`: 自定义字符集（会覆盖其他字符类型设置）
+- `--count`: 生成密码的数量（默认1）
+- `--output`: 输出格式：json, yaml, table（默认table）
+
 ### GitLab 合并请求创建
 
 ```bash
