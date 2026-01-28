@@ -27,17 +27,18 @@ func LoadConfig(path string) error {
 		return err
 	}
 	ext := filepath.Ext(path)
-	if ext == ".json" {
+	switch ext {
+	case ".json":
 		err = json.Unmarshal(data, &C)
 		if err != nil {
 			return err
 		}
-	} else if ext == ".yaml" || ext == ".yml" {
+		case ".yaml", ".yml":
 		err = yaml.Unmarshal(data, &C)
 		if err != nil {
 			return err
 		}
-	} else {
+	default:
 		return fmt.Errorf("unsupport file ext : %s", ext)
 	}
 	return nil
@@ -47,17 +48,18 @@ func SaveConfig(path string) error {
 	var err error
 	var data []byte
 	ext := filepath.Ext(path)
-	if ext == ".json" {
+	switch ext {
+	case ".json":
 		data, err = json.Marshal(C)
 		if err != nil {
 			return err
 		}
-	} else if ext == ".yaml" || ext == ".yml" {
+	case ".yaml", ".yml":
 		data, err = yaml.Marshal(C)
 		if err != nil {
 			return err
 		}
-	} else {
+	default:
 		return fmt.Errorf("unsupport file ext : %s", ext)
 	}
 	return os.WriteFile(path, data, 0644)

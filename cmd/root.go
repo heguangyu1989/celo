@@ -27,6 +27,7 @@ func init() {
 	rootCmd.AddCommand(GetGenDefaultCmd())
 	rootCmd.AddCommand(GetMergeCommand())
 	rootCmd.AddCommand(GetEnvListCmd())
+	rootCmd.AddCommand(GetVCCmd())
 }
 
 func Execute() error {
