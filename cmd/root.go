@@ -28,6 +28,7 @@ func init() {
 	rootCmd.AddCommand(GetMergeCommand())
 	rootCmd.AddCommand(GetEnvListCmd())
 	rootCmd.AddCommand(GetVCCmd())
+	rootCmd.AddCommand(GetDockerCmd())
 }
 
 func Execute() error {
