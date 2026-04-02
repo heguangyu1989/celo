@@ -1,0 +1,80 @@
+#!/bin/bash
+# tma - Tmux attach/switch with interactive session selection (shows full session info)
+set -euo pipefail
+
+mapfile -t names < <(tmux list-sessions -F '#S' 2>/dev/null || true)
+mapfile -t lines < <(tmux list-sessions 2>/dev/null || true)
+
+if [[ ${#names[@]} -eq 0 ]]; then
+    echo "No tmux sessions found."
+    exit 1
+fi
+
+target=""
+
+# Only one session -> attach/switch directly
+if [[ ${#names[@]} -eq 1 ]]; then
+    target="${names[0]}"
+fi
+
+# Prefer fzf (arrow keys + fuzzy search over full lines)
+if [[ -z "${target}" ]] && command -v fzf &>/dev/null; then
+    selected=$(printf '%s\n' "${lines[@]}" | fzf --prompt="tmux session> " --height=40% --reverse)
+    for i in "${!lines[@]}"; do
+        if [[ "${lines[$i]}" == "$selected" ]]; then
+            target="${names[$i]}"
+            break
+        fi
+    done
+fi
+
+# Fallback to whiptail (arrow keys menu)
+if [[ -z "${target}" ]] && command -v whiptail &>/dev/null; then
+    menu_args=()
+    for i in "${!names[@]}"; do
+        item="${lines[$i]#"${names[$i]}: "}"
+        [[ -z "$item" ]] && item="${lines[$i]}"
+        menu_args+=("${names[$i]}" "$item")
+    done
+    target=$(whiptail --title "tmux sessions" --menu "Choose a session to attach" 20 90 10 \
+        "${menu_args[@]}" 3>&1 1>&2 2>&3) || true
+fi
+
+# Fallback to dialog
+if [[ -z "${target}" ]] && command -v dialog &>/dev/null; then
+    menu_args=()
+    for i in "${!names[@]}"; do
+        item="${lines[$i]#"${names[$i]}: "}"
+        [[ -z "$item" ]] && item="${lines[$i]}"
+        menu_args+=("${names[$i]}" "$item")
+    done
+    target=$(dialog --clear --title "tmux sessions" --menu "Choose a session to attach" 20 90 10 \
+        "${menu_args[@]}" 3>&1 1>&2 2>&3) || true
+    clear
+fi
+
+# Final fallback: numbered list
+if [[ -z "${target}" ]]; then
+    echo "Multiple tmux sessions found:"
+    for i in "${!lines[@]}"; do
+        printf '  %2d. %s\n' "$((i + 1))" "${lines[$i]}"
+    done
+    read -rp "Select session (number): " num
+    if [[ "$num" =~ ^[0-9]+$ ]] && (( num >= 1 && num <= ${#lines[@]} )); then
+        target="${names[$((num - 1))]}"
+    else
+        echo "Invalid selection."
+        exit 1
+    fi
+fi
+
+if [[ -z "${target}" ]]; then
+    echo "No session selected."
+    exit 1
+fi
+
+if [[ -n "${TMUX:-}" ]]; then
+    tmux switch-client -t "$target"
+else
+    tmux attach-session -t "$target"
+fi
