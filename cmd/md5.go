@@ -16,7 +16,7 @@ import (
 func GetMD5Cmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "md5",
-		Short: " calculate a message-digest fingerprint (checksum) for a file or string",
+		Short: "Calculate a message-digest fingerprint (checksum) for a file or string",
 		RunE:  runMD5Cmd,
 	}
 	cmd.Flags().String("output", "json", "output format: json, yaml, table")

@@ -17,8 +17,8 @@ import (
 func GetVCCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "vc",
-		Short: "管理VSCode Server服务",
-		Long:  "管理远程服务器的VSCode Server进程和文件夹清理",
+		Short: "Manage VSCode Server services",
+		Long:  "Manage VSCode Server processes and clean up folders on remote servers.",
 	}
 
 	cmd.AddCommand(getVCSkillAllCmd())
@@ -31,8 +31,8 @@ func GetVCCmd() *cobra.Command {
 func getVCSkillAllCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "skill-all",
-		Short: "停止所有VSCode Server服务",
-		Long:  "查找并强制杀死所有运行的vscode-server进程",
+		Short: "Kill all VSCode Server processes",
+		Long:  "Find and forcefully kill all running vscode-server processes.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// 查找所有vscode-server进程
 			psCmd := exec.Command("ps", "aux")
@@ -108,8 +108,8 @@ func getVCCleanCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "clean",
-		Short: "清理.vscode-server文件夹",
-		Long:  "扫描并清理.vscode-server中的旧版本、日志和缓存文件，默认保留最新的3个版本",
+		Short: "Clean .vscode-server folders",
+		Long:  "Scan and clean old versions, logs, and cache files in .vscode-server. Keeps the latest 3 versions by default.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			homeDir, err := os.UserHomeDir()
 			if err != nil {
@@ -530,8 +530,8 @@ func formatSize(bytes int64) string {
 
 	// 排序文件大小和单位，从大到小
 	sizes := []struct {
-		size  int64
-		unit  string
+		size int64
+		unit string
 	}{
 		{GB, "GB"},
 		{MB, "MB"},

@@ -1,240 +1,243 @@
-# AGENTS.md - Celo CLI Tool
+# Celo - AI Agent Guide
 
 ## Project Overview
 
-Celo is a developer efficiency command-line tool written in Go, designed to provide essential utilities for daily development workflows. The tool focuses on speed and efficiency, offering features like MD5 checksum calculation, GitLab merge request creation, and environment file management.
+Celo is a Go-based CLI tool designed for developer productivity. The name represents "Efficiency, at speed." It provides a collection of practical utilities for daily development workflows including:
 
-**Key Features:**
-- MD5 checksum calculation for files and strings with multiple output formats (JSON, YAML, table)
-- GitLab merge request creation from command line
-- Interactive .env file switching using terminal UI
-- Build information display
-- Secure random password generation with customizable options
-
-The project uses a clean modular architecture with clear separation between command implementations, public packages, and internal logic.
+- **MD5 checksum calculation** for files and strings
+- **Secure password generation** with customizable character sets
+- **GitLab merge request creation** from command line
+- **Environment file switching** with interactive TUI
+- **Network port diagnostics** with process identification
+- **Docker image verification** in registries
+- **VSCode Server management** for remote development cleanup
 
 ## Technology Stack
 
-- **Language**: Go 1.25.1
-- **CLI Framework**: Cobra (github.com/spf13/cobra)
-- **Terminal UI**: Charm Bracelet ecosystem
-  - bubbletea: TUI framework
-  - bubbles: UI components
-  - lipgloss: Styled terminal rendering
-- **HTTP Client**: Resty v2 (github.com/go-resty/resty/v2)
-- **Logging**: Logrus (github.com/sirupsen/logrus)
-- **Testing**: Testify (github.com/stretchr/testify)
-- **Configuration**: YAML/JSON support via gopkg.in/yaml.v3
+| Component | Technology |
+|-----------|------------|
+| Language | Go 1.25.1+ |
+| CLI Framework | [spf13/cobra](https://github.com/spf13/cobra) |
+| TUI Components | [charmbracelet/bubbletea](https://github.com/charmbracelet/bubbletea), [charmbracelet/bubbles](https://github.com/charmbracelet/bubbles), [charmbracelet/lipgloss](https://github.com/charmbracelet/lipgloss) |
+| HTTP Client | [go-resty/resty](https://github.com/go-resty/resty) |
+| Logging | [sirupsen/logrus](https://github.com/sirupsen/logrus) |
+| YAML/JSON | [gopkg.in/yaml.v3](https://gopkg.in/yaml.v3) |
+| Testing | [stretchr/testify](https://github.com/stretchr/testify) |
 
 ## Project Structure
 
 ```
 .
-├── main.go                 # Entry point, delegates to cmd package
-├── cmd/                    # Command implementations
-│   ├── root.go            # Main cobra command setup
-│   ├── md5.go             # MD5 calculation command
-│   ├── merge.go           # GitLab merge request command
-│   ├── build_info.go      # Build information command
-│   ├── env.go             # Interactive .env switching (TUI)
-│   ├── password.go        # Password generation command
-│   └── conf_cmd.go        # Config generation command
-├── pkg/                    # Public packages
-│   ├── config/            # Configuration management
-│   ├── utils/             # File and math utilities
-│   │   ├── files.go
-│   │   ├── math.go
-│   │   └── password.go    # Password generation logic
-│   └── p/                 # Pretty printing with styling
-├── internal/              # Internal packages
-│   └── merge/             # GitLab integration logic
-├── go.mod                 # Go module definition
-├── Makefile              # Build automation
-└── quick_start.md        # User documentation (Chinese)
+├── main.go              # Application entry point
+├── go.mod               # Go module definition
+├── go.sum               # Go dependency checksums
+├── Makefile             # Build automation (lint only)
+├── README.md            # Project readme
+├── .gitignore           # Git ignore rules
+├── AGENTS.md            # This file
+├── cmd/                 # Command implementations
+│   ├── root.go          # Root command & command registration
+│   ├── build_info.go    # 'info' command
+│   ├── md5.go           # 'md5' command
+│   ├── password.go      # 'password' command
+│   ├── merge.go         # 'merge' command (GitLab MR)
+│   ├── env.go           # 'env' command (interactive env switcher)
+│   ├── net.go           # 'net' command (port checking)
+│   ├── docker.go        # 'docker' command (image verification)
+│   ├── vc.go            # 'vc' command (VSCode Server management)
+│   └── conf_cmd.go      # 'gen-default' command
+├── internal/            # Internal packages
+│   └── merge/           # GitLab merge request logic
+│       ├── merge.go     # MR creation API call
+│       ├── git_path.go  # Git URL parsing
+│       ├── read_config.go # Git config reading
+│       ├── types.go     # Domain types
+│       └── gitlab_types.go # GitLab API types
+└── pkg/                 # Public packages
+    ├── config/          # Configuration management
+    │   ├── config.go    # Config struct and load/save
+    │   └── misc.go      # Default path utilities
+    ├── utils/           # General utilities
+    │   ├── files.go     # File operations
+    │   ├── math.go      # Math helpers (MaxInt, MinInt)
+    │   └── password.go  # Password generation
+    └── p/               # Printing utilities
+        └── print.go     # Styled console output
 ```
 
-## Build and Development Commands
+## Build and Run Commands
 
-### Building
+### Build from Source
+
 ```bash
-# Build the binary
+# Build binary
 go build -o celo .
 
 # Install to system
 sudo mv celo /usr/local/bin/
 ```
 
-### Testing
+### Development Commands
+
 ```bash
-# Run all tests
+# Run linter
+make lint
+
+# Or directly
+golangci-lint run
+
+# Run tests
 go test ./...
 
-# Run tests with verbose output
-go test -v ./...
-
-# Run tests for specific package
-go test -v ./pkg/utils
-go test -v ./pkg/p
+# Run specific package tests
+go test ./pkg/utils/...
 ```
 
-### Linting
-```bash
-# Run golangci-lint (requires installation)
-make lint
-# or
-golangci-lint run
-```
+## Available Commands
 
-### Configuration
-```bash
-# Generate default config file
-celo gen-default --dst celo.yaml
+| Command | Description | Key Flags |
+|---------|-------------|-----------|
+| `celo info` | Show build information | - |
+| `celo md5 <file/string...>` | Calculate MD5 checksums | `--output` (json/yaml/table) |
+| `celo password` | Generate random passwords | `--length`, `--upper`, `--lower`, `--digits`, `--special`, `--custom`, `--count`, `--output` |
+| `celo merge` | Create GitLab merge request | `--src`, `--dst`, `--title`, `--tags` |
+| `celo env [path]` | Interactive environment file switcher | - |
+| `celo net port [port/range...]` | Check TCP port status | `--output`, `--timeout` |
+| `celo docker check [images...]` | Verify Docker images exist | `--output` |
+| `celo vc skill-all` | Kill all VSCode Server processes | - |
+| `celo vc clean` | Clean VSCode Server folders | `--keep`, `--yes` |
+| `celo gen-default` | Generate default config file | `--dst` |
 
-# Use custom config file
-celo --config /path/to/config.yaml md5 file.txt
-```
+## Configuration
 
-## Code Style Guidelines
+Configuration file location: `~/.celo.yaml` or `~/.celo.json`
 
-### Language and Comments
-- **Code**: English for all identifiers, function names, and documentation
-- **Comments**: Mix of English and Chinese (tests primarily use Chinese comments)
-- **User-facing output**: Mix of English and Chinese (GitLab features use English, env switching uses Chinese)
+### Example Configuration
 
-### Package Organization
-- **cmd/**: Command implementations, each command in its own file
-- **pkg/**: Public API packages, reusable across projects
-- **internal/**: Project-specific internal logic not exposed externally
-
-### Error Handling
-- Always return errors from command RunE functions
-- Use structured logging with Logrus for fatal errors
-- User-facing errors use the `p` package for styled output
-
-### Dependencies
-- Minimal external dependencies
-- Preference for well-maintained libraries (Charm Bracelet, Cobra)
-- No vendor directory (uses Go modules)
-
-## Testing Strategy
-
-### Test Structure
-- Test files follow Go conventions: `*_test.go`
-- Tests exist for utility functions in `pkg/` packages
-- Testify used for assertions (`assert` package)
-
-### Running Tests
-```bash
-# Test utilities
-go test ./pkg/utils -v
-
-# Test printing functions
-go test ./pkg/p -v
-```
-
-### Test Coverage Areas
-- **File operations**: Existence checks, .env file discovery
-- **Math utilities**: MaxInt function edge cases
-- **Printing functions**: Styled output verification
-
-## Key Commands Explained
-
-### MD5 Command (`cmd/md5.go`)
-- Calculates MD5 checksums for files or strings
-- Auto-detects input type (file vs string)
-- Supports JSON, YAML, and table output formats
-- Uses Charm Bracelet table for formatted display
-
-### Merge Command (`cmd/merge.go`, `internal/merge/`)
-- Creates GitLab merge requests via API
-- Automatically detects GitLab project from git remote
-- Requires `gitlab_token` in config
-- Uses Resty for HTTP requests
-
-### Env Command (`cmd/env.go`)
-- Interactive TUI for switching .env files
-- Creates symbolic links from selected file to `.env`
-- Uses bubbletea for terminal UI
-- Lists all `.env.*` files (excluding `.env` itself)
-
-### Password Command (`cmd/password.go`)
-- Generates secure random passwords with customizable options
-- Supports multiple output formats (JSON, YAML, table)
-- Configurable character sets (uppercase, lowercase, digits, special characters)
-- Custom character set support
-- Batch password generation capability
-- Uses crypto/rand for cryptographically secure random generation
-
-### Config Command (`cmd/conf_cmd.go`)
-- Generates default configuration file
-- Supports both YAML and JSON formats
-- Default location: `~/.celo.yaml`
-
-## Configuration System
-
-### Config Structure
 ```yaml
+# ~/.celo.yaml
 gitlab_token: "your_gitlab_personal_access_token"
 ```
 
-### Config Loading Priority
-1. Command-line flag: `--config /path/to/config.yaml`
-2. Default locations: `~/.celo.yaml` or `~/.celo.json`
-3. In-memory default config if no file exists
+The config file is loaded automatically on startup. Use `--config` flag to specify a custom path.
 
-### Config Format Support
-- YAML (`.yaml`, `.yml`)
-- JSON (`.json`)
-- Auto-detection based on file extension
+## Code Style Guidelines
+
+### Package Organization
+
+1. **cmd/**: Each command is in its own file. Most commands are registered in `cmd/root.go` via `init()` function, but some commands (e.g., `password`, `vc`) register themselves via `init()` in their own files.
+2. **internal/**: Private implementation details. The `merge` package handles GitLab API interactions.
+3. **pkg/**: Public reusable packages:
+   - `config`: Configuration management with YAML/JSON support
+   - `utils`: General-purpose utilities (file ops, math, password generation)
+   - `p`: Styled printing utilities using lipgloss
+
+### Naming Conventions
+
+- Command functions: `GetXXXCmd()` returns `*cobra.Command`
+- Command runners: `runXXXCmd(cmd *cobra.Command, args []string) error`
+- Types use PascalCase, constants use CamelCase or ALL_CAPS
+- Test files: `xxx_test.go` with `TestXXX` function names
+
+### Error Handling
+
+- Return errors from command runners for centralized handling
+- Use `p.Error()` for styled error output
+- Log fatal errors only in `main.go`
+
+### Output Formats
+
+Commands support multiple output formats (JSON, YAML, Table). Follow this pattern:
+
+```go
+switch output {
+case "json":
+    return p.PrintJSON(results)
+case "yaml":
+    return p.PrintYAML(results)
+case "table":
+    printTable(results)
+}
+```
+
+## Testing
+
+Tests are located alongside source files with `_test.go` suffix.
+
+### Running Tests
+
+```bash
+# All tests
+go test ./...
+
+# Verbose output
+go test -v ./...
+
+# Specific package
+go test ./pkg/utils/...
+
+# With coverage
+go test -cover ./...
+```
+
+### Test Patterns
+
+- Use `t.TempDir()` for temporary files in tests
+- Use `testify/assert` for assertions
+- Use table-driven tests for multiple test cases
+- Test both success and error cases
+
+Example from `pkg/utils/password_test.go`:
+
+```go
+func TestGeneratePassword_Length(t *testing.T) {
+    tests := []struct {
+        name   string
+        length int
+    }{
+        {"length 8", 8},
+        {"length 12", 12},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            // test implementation
+        })
+    }
+}
+```
+
+## Key Implementation Details
+
+### Interactive TUI (env command)
+
+Uses Charmbracelet's Bubble Tea framework for interactive list selection. See `cmd/env.go` for the model implementation pattern.
+
+### GitLab Integration
+
+The `merge` command:
+1. Reads Git config to get remote URL
+2. Parses GitLab URL (supports both HTTPS and SSH formats)
+3. Creates MR via GitLab API v4
+4. Requires `gitlab_token` in config file
+
+### Platform-Specific Code
+
+The `net port` command includes platform-specific process detection:
+- macOS: `lsof` and `netstat`
+- Linux: `ss`, `netstat`, `lsof`
+- Windows: `netstat` and `tasklist`
 
 ## Security Considerations
 
-### Sensitive Data
-- GitLab tokens stored in config file
-- Config file should have restricted permissions (0600 recommended)
-- Never commit config files with tokens to version control
-
-### GitLab Integration
-- Uses Personal Access Tokens with `api` scope
-- HTTPS only (no SSH for API calls)
-- Token passed as `private_token` parameter
-
-### File Operations
-- Symlink creation for .env files (potential security risk if directory is writable by others)
-- File existence checks before reading
+1. **GitLab Token**: Stored in config file with user permissions. Never commit config files.
+2. **Password Generation**: Uses `crypto/rand` for cryptographically secure random numbers, not `math/rand`.
+3. **File Operations**: Check file existence and permissions before operations.
+4. **Command Execution**: Validate inputs before passing to shell commands (in `vc` and `net` commands).
 
 ## Development Workflow
 
-### Adding New Commands
-1. Create new file in `cmd/` directory
-2. Implement command following Cobra patterns
-3. Add command to root command in `cmd/root.go`
-4. Add tests if command contains business logic
-5. Update quick_start.md with usage examples
-
-### Adding New Packages
-- Public APIs: Place in `pkg/` directory
-- Internal logic: Place in `internal/` directory
-- Follow existing package structure and naming conventions
-
-### Testing Changes
-- Run full test suite: `go test ./...`
-- Test individual commands manually
-- Verify configuration loading works
-- Check TUI commands with different terminal sizes
-
-## IDE and Tooling
-
-### IDE Support
-- **GoLand/IntelliJ**: Project includes `.idea/` directory with configuration
-- **VS Code**: Not explicitly configured, but supported via Go extension
-
-### Required Tools
-- Go 1.25.1 or higher
-- golangci-lint (for linting)
-- Git (for GitLab functionality)
-
-### Git Integration
-- Automatic GitLab project detection from `remote.origin.url`
-- Supports both HTTPS and SSH git URLs
-- Parses GitLab paths for API calls
+1. Add new commands in `cmd/xxx.go` with `GetXXXCmd()` function
+2. Register in `cmd/root.go` `init()` function (or use `init()` in the command file)
+3. Add tests in `cmd/xxx_test.go` or `pkg/xxx/xxx_test.go`
+4. Run linter: `make lint`
+5. Run tests: `go test ./...`
