@@ -62,5 +62,5 @@ func SaveConfig(path string) error {
 	default:
 		return fmt.Errorf("unsupport file ext : %s", ext)
 	}
-	return os.WriteFile(path, data, 0644)
+	return os.WriteFile(path, data, 0600)
 }

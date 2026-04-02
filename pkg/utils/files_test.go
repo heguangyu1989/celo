@@ -48,7 +48,7 @@ func TestFindAllEnvFiles(t *testing.T) {
 	tempDir := t.TempDir()
 	createFiles := []string{
 		".env",
-		".env.hgy",
+		".env.local",
 		".env.develop",
 	}
 	for _, fileName := range createFiles {
@@ -66,5 +66,5 @@ func TestFindAllEnvFiles(t *testing.T) {
 	ret, err := FindAllEnvFiles(tempDir)
 	assert.NoError(t, err)
 	t.Log(ret)
-	assert.ElementsMatch(t, []string{".env.hgy", ".env.develop"}, ret)
+	assert.ElementsMatch(t, []string{".env.local", ".env.develop"}, ret)
 }
