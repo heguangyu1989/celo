@@ -48,3 +48,16 @@ func TestRunMD5CmdRejectsUnsupportedOutput(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "unsupported output format")
 }
+
+func TestRunMD5CmdOutputFormats(t *testing.T) {
+	filePath := filepath.Join(t.TempDir(), "data.txt")
+	writeFile(t, filePath, "hello")
+
+	for _, output := range []string{"json", "yaml", "table"} {
+		t.Run(output, func(t *testing.T) {
+			cmd := GetMD5Cmd()
+			require.NoError(t, cmd.Flags().Set("output", output))
+			require.NoError(t, runMD5Cmd(cmd, []string{filePath, "literal"}))
+		})
+	}
+}

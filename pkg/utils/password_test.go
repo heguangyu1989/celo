@@ -102,7 +102,7 @@ func TestGeneratePassword_CustomChars(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Len(t, password, 10)
-	
+
 	for _, char := range password {
 		assert.Contains(t, customChars, string(char))
 	}
@@ -169,9 +169,9 @@ func TestGeneratePasswords_InvalidCount(t *testing.T) {
 
 func TestGeneratePassword_Randomness(t *testing.T) {
 	opts := PasswordOptions{
-		Length:   10,
-		UseLower: true,
-		UseUpper: true,
+		Length:    10,
+		UseLower:  true,
+		UseUpper:  true,
 		UseDigits: true,
 	}
 

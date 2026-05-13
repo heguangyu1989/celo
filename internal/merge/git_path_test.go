@@ -35,3 +35,22 @@ func TestParsePathRejectsMissingProjectPath(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "missing project path")
 }
+
+func TestParsePathAdditionalBranches(t *testing.T) {
+	info, err := ParsePath("ssh://git@gitlab.example.com:2222/group/project.git", GitTypeGitlab)
+	require.NoError(t, err)
+	assert.Equal(t, "https", info.Scheme)
+	assert.Equal(t, "gitlab.example.com:2222", info.Host)
+
+	_, err = ParsePath("", GitTypeGitlab)
+	require.Error(t, err)
+
+	_, err = ParsePath("git@gitlab.example.com", GitTypeGitlab)
+	require.Error(t, err)
+
+	_, err = ParsePath("https://", GitTypeGitlab)
+	require.Error(t, err)
+
+	_, err = ParsePath("https://gitlab.example.com/group/project", "unknown")
+	require.Error(t, err)
+}
