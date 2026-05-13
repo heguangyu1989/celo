@@ -1,6 +1,7 @@
 package merge
 
 import (
+	"fmt"
 	"os/exec"
 	"strings"
 )
@@ -31,6 +32,9 @@ func GetGitInfo() (GitInfo, error) {
 				return GitInfo{}, err
 			}
 		}
+	}
+	if info.GitPathInfo.RawInput == "" {
+		return GitInfo{}, fmt.Errorf("remote.origin.url not found")
 	}
 	return info, nil
 }

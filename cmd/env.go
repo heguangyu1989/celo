@@ -57,7 +57,6 @@ type model struct {
 	list     list.Model
 	choice   string
 	quitting bool
-	rootPath string
 }
 
 func (m model) Init() tea.Cmd {
@@ -91,18 +90,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	var err error
 	if m.choice != "" {
-		if utils.FileExists(filepath.Join(m.rootPath, ".env")) {
-			err := os.Remove(filepath.Join(m.rootPath, ".env"))
-			if err != nil {
-				panic(err)
-			}
-		}
-		err = os.Symlink(filepath.Join(m.rootPath, m.choice), filepath.Join(m.rootPath, ".env"))
-		if err != nil {
-			panic(err)
-		}
 		return quitTextStyle.Render("create link .env ->" + m.choice)
 	}
 	if m.quitting {
@@ -134,6 +122,8 @@ func runEnvListCmd(cmd *cobra.Command, args []string) error {
 	f, err := os.Stat(rootPath)
 	if os.IsNotExist(err) {
 		return fmt.Errorf("%s does not exist", rootPath)
+	} else if err != nil {
+		return err
 	} else {
 		if !f.IsDir() {
 			return fmt.Errorf("%s is not a directory", rootPath)
@@ -166,9 +156,6 @@ func runEnvListCmd(cmd *cobra.Command, args []string) error {
 				return fmt.Errorf("could not read symlink: %w", err)
 			}
 			title += fmt.Sprintf("\n .env -> %s", target)
-		} else {
-			p.Error(fmt.Sprintf("root path %s .env must be a symlink", rootPath))
-			return nil
 		}
 	}
 
@@ -182,12 +169,48 @@ func runEnvListCmd(cmd *cobra.Command, args []string) error {
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
 
-	m := model{list: l, rootPath: rootPath}
+	m := model{list: l}
 
-	if _, err := tea.NewProgram(m).Run(); err != nil {
-		fmt.Println("Error running program:", err)
-		os.Exit(1)
+	finalModel, err := tea.NewProgram(m).Run()
+	if err != nil {
+		return fmt.Errorf("error running program: %w", err)
+	}
+	final, ok := finalModel.(model)
+	if !ok {
+		return fmt.Errorf("unexpected env selector model: %T", finalModel)
+	}
+	if final.choice == "" {
+		return nil
 	}
 
+	if err := switchEnv(rootPath, final.choice); err != nil {
+		return err
+	}
+	p.Success(fmt.Sprintf("create link .env -> %s", final.choice))
+	return nil
+}
+
+func switchEnv(rootPath string, choice string) error {
+	target := filepath.Join(rootPath, choice)
+	targetInfo, err := os.Stat(target)
+	if err != nil {
+		return fmt.Errorf("stat selected env file: %w", err)
+	}
+	if targetInfo.IsDir() {
+		return fmt.Errorf("selected env path is a directory: %s", target)
+	}
+
+	envPath := filepath.Join(rootPath, ".env")
+	if _, err := os.Lstat(envPath); err == nil {
+		if err := os.Remove(envPath); err != nil {
+			return fmt.Errorf("remove existing .env: %w", err)
+		}
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("stat existing .env: %w", err)
+	}
+
+	if err := os.Symlink(target, envPath); err != nil {
+		return fmt.Errorf("create .env symlink: %w", err)
+	}
 	return nil
 }

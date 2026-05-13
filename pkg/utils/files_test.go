@@ -50,9 +50,14 @@ func TestFindAllEnvFiles(t *testing.T) {
 		".env",
 		".env.local",
 		".env.develop",
+		filepath.Join("configs", ".env.test"),
 	}
 	for _, fileName := range createFiles {
 		existingFile := filepath.Join(tempDir, fileName)
+		err := os.MkdirAll(filepath.Dir(existingFile), 0755)
+		if err != nil {
+			panic(err)
+		}
 		file, err := os.Create(existingFile)
 		if err != nil {
 			panic(err)
@@ -66,5 +71,5 @@ func TestFindAllEnvFiles(t *testing.T) {
 	ret, err := FindAllEnvFiles(tempDir)
 	assert.NoError(t, err)
 	t.Log(ret)
-	assert.ElementsMatch(t, []string{".env.local", ".env.develop"}, ret)
+	assert.ElementsMatch(t, []string{".env.local", ".env.develop", filepath.Join("configs", ".env.test")}, ret)
 }

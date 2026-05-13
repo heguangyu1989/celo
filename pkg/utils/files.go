@@ -9,7 +9,7 @@ import (
 
 func FileExists(path string) bool {
 	f, err := os.Stat(path)
-	if os.IsNotExist(err) {
+	if err != nil {
 		return false
 	}
 	if f.IsDir() {
@@ -21,6 +21,9 @@ func FileExists(path string) bool {
 func FindAllEnvFiles(rootPath string) ([]string, error) {
 	ret := make([]string, 0)
 	err := filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
 		if d.IsDir() {
 			return nil
 		}
@@ -28,7 +31,11 @@ func FindAllEnvFiles(rootPath string) ([]string, error) {
 			return nil
 		}
 		if strings.HasPrefix(d.Name(), ".env") {
-			ret = append(ret, d.Name())
+			relPath, err := filepath.Rel(rootPath, path)
+			if err != nil {
+				return err
+			}
+			ret = append(ret, relPath)
 		}
 		return nil
 	})

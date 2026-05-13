@@ -111,14 +111,21 @@ func getVCCleanCmd() *cobra.Command {
 		Short: "Clean .vscode-server folders",
 		Long:  "Scan and clean old versions, logs, and cache files in .vscode-server. Keeps the latest 3 versions by default.",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if keepVersions < 0 {
+				return fmt.Errorf("--keep must be greater than or equal to 0")
+			}
+
 			homeDir, err := os.UserHomeDir()
 			if err != nil {
 				return fmt.Errorf("获取用户主目录失败: %v", err)
 			}
 
 			vscodeDir := filepath.Join(homeDir, ".vscode-server")
-			if _, err := os.Stat(vscodeDir); os.IsNotExist(err) {
-				return fmt.Errorf(".vscode-server目录不存在: %s", vscodeDir)
+			if _, err := os.Stat(vscodeDir); err != nil {
+				if os.IsNotExist(err) {
+					return fmt.Errorf(".vscode-server目录不存在: %s", vscodeDir)
+				}
+				return err
 			}
 
 			fmt.Printf("开始扫描: %s\n", vscodeDir)
@@ -139,6 +146,9 @@ func getVCCleanCmd() *cobra.Command {
 			// 显示分析结果
 			if err := displayAnalysis(analysis); err != nil {
 				return err
+			}
+			if len(analysis.Items) == 0 {
+				return nil
 			}
 
 			// 确认清理
@@ -226,6 +236,9 @@ type lruData []string
 
 func analyzeCLIVersions(cliDir, lruPath string, keepCount int) ([]cleanupItem, error) {
 	var items []cleanupItem
+	if keepCount < 0 {
+		return nil, fmt.Errorf("keepCount must be greater than or equal to 0")
+	}
 
 	// 读取LRU文件
 	lruFile, err := os.Open(lruPath)
@@ -449,11 +462,15 @@ func displayAnalysis(analysis *analysisResult) error {
 // performCleanup 执行清理
 func performCleanup(analysis *analysisResult, keepCount int) (int64, error) {
 	var cleanedSize int64
+	if keepCount < 0 {
+		return 0, fmt.Errorf("keepCount must be greater than or equal to 0")
+	}
 
 	fmt.Println("\n开始清理...")
 	fmt.Println(strings.Repeat("-", 40))
 
-	for i, item := range analysis.Items {
+	removedCLIVersion := false
+	for _, item := range analysis.Items {
 		// 跳过LRU备份文件
 		if strings.Contains(item.Path, "lru.json.backup") {
 			continue
@@ -464,32 +481,48 @@ func performCleanup(analysis *analysisResult, keepCount int) (int64, error) {
 		} else {
 			fmt.Printf("  ✓ %s\n", item.Description)
 			cleanedSize += item.Size
-		}
-
-		// 清理LRU文件（保留最新的keepCount个版本）
-		if i == len(analysis.Items)-1 && strings.Contains(item.Description, "CLI版本") {
-			if file, err := os.ReadFile(analysis.LRUPath); err == nil {
-				var versions lruData
-				if json.Unmarshal(file, &versions) == nil {
-					if len(versions) > keepCount {
-						newLRU := versions[:keepCount]
-						if data, err := json.Marshal(newLRU); err == nil {
-							// 备份原文件
-							backupPath := analysis.LRUPath + ".backup"
-							if err := os.WriteFile(backupPath, file, 0644); err != nil {
-								fmt.Printf("  ⚠ 备份LRU文件失败: %v\n", err)
-							}
-							if err := os.WriteFile(analysis.LRUPath, data, 0644); err != nil {
-								fmt.Printf("  ⚠ 更新LRU文件失败: %v\n", err)
-							}
-						}
-					}
-				}
+			if strings.Contains(item.Description, "CLI版本:") {
+				removedCLIVersion = true
 			}
 		}
 	}
 
+	if removedCLIVersion {
+		if err := updateLRUFile(analysis.LRUPath, keepCount); err != nil {
+			return cleanedSize, err
+		}
+	}
+
 	return cleanedSize, nil
+}
+
+func updateLRUFile(lruPath string, keepCount int) error {
+	file, err := os.ReadFile(lruPath)
+	if err != nil {
+		return fmt.Errorf("读取LRU文件失败: %v", err)
+	}
+
+	var versions lruData
+	if err := json.Unmarshal(file, &versions); err != nil {
+		return fmt.Errorf("解析LRU文件失败: %v", err)
+	}
+	if len(versions) <= keepCount {
+		return nil
+	}
+
+	data, err := json.Marshal(versions[:keepCount])
+	if err != nil {
+		return fmt.Errorf("序列化LRU文件失败: %v", err)
+	}
+
+	backupPath := lruPath + ".backup"
+	if err := os.WriteFile(backupPath, file, 0644); err != nil {
+		return fmt.Errorf("备份LRU文件失败: %v", err)
+	}
+	if err := os.WriteFile(lruPath, data, 0644); err != nil {
+		return fmt.Errorf("更新LRU文件失败: %v", err)
+	}
+	return nil
 }
 
 // getDirSize 获取目录大小

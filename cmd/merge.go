@@ -26,7 +26,7 @@ func runMergeCommand(cmd *cobra.Command, args []string) error {
 	title, _ := cmd.Flags().GetString("title")
 	tags, _ := cmd.Flags().GetStringArray("tags")
 	if srcBranch == "" || dstBranch == "" || title == "" {
-		return errors.New("src, dst title and tags must be set")
+		return errors.New("src, dst and title must be set")
 	}
 
 	return merge.Merge(srcBranch, dstBranch, title, tags)

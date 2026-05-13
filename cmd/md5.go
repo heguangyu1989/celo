@@ -37,19 +37,27 @@ type calData struct {
 	MD5  string  `json:"md5"`
 }
 
-func (c *calData) Init() {
-	data := make([]byte, 0)
+func (c *calData) Init() error {
+	var data []byte
 	switch c.Type {
 	case calTypeString:
 		data = []byte(c.Name)
 	case calTypeFile:
-		data, _ = os.ReadFile(c.Name)
+		var err error
+		data, err = os.ReadFile(c.Name)
+		if err != nil {
+			return fmt.Errorf("read file %s: %w", c.Name, err)
+		}
+	case calTypeDir:
+		return fmt.Errorf("can not calculate md5 for directory: %s", c.Name)
 	}
-	if len(data) > 0 {
-		m := md5.New()
-		m.Write(data)
-		c.MD5 = hex.EncodeToString(m.Sum(nil))
+
+	m := md5.New()
+	if _, err := m.Write(data); err != nil {
+		return err
 	}
+	c.MD5 = hex.EncodeToString(m.Sum(nil))
+	return nil
 }
 
 func runMD5Cmd(cmd *cobra.Command, args []string) error {
@@ -65,6 +73,8 @@ func runMD5Cmd(cmd *cobra.Command, args []string) error {
 		f, err := os.Stat(arg)
 		if os.IsNotExist(err) {
 			it.Type = calTypeString
+		} else if err != nil {
+			return fmt.Errorf("stat %s: %w", arg, err)
 		} else {
 			if f.IsDir() {
 				it.Type = calTypeDir
@@ -72,7 +82,9 @@ func runMD5Cmd(cmd *cobra.Command, args []string) error {
 				it.Type = calTypeFile
 			}
 		}
-		it.Init()
+		if err := it.Init(); err != nil {
+			return err
+		}
 		dataList = append(dataList, it)
 	}
 
@@ -85,7 +97,10 @@ func runMD5Cmd(cmd *cobra.Command, args []string) error {
 		}
 		fmt.Println(string(_data))
 	case "yaml":
-		_data, _ := yaml.Marshal(dataList)
+		_data, err := yaml.Marshal(dataList)
+		if err != nil {
+			return err
+		}
 		fmt.Println(string(_data))
 	case "table":
 		maxNameLen := 0
@@ -115,6 +130,8 @@ func runMD5Cmd(cmd *cobra.Command, args []string) error {
 			table.WithHeight(7),
 		)
 		fmt.Println(t.View())
+	default:
+		return fmt.Errorf("unsupported output format: %s", output)
 	}
 	return nil
 }
