@@ -11,6 +11,7 @@ Celo is a Go-based CLI tool designed for developer productivity. The name repres
 - **Network port diagnostics** with process identification
 - **Docker image verification** in registries
 - **VSCode Server management** for remote development cleanup
+- **Git branch sync** back to master/main with stale branch cleanup
 
 ## Technology Stack
 
@@ -45,6 +46,7 @@ Celo is a Go-based CLI tool designed for developer productivity. The name repres
 │   ├── net.go           # 'net' command (port checking)
 │   ├── docker.go        # 'docker' command (image verification)
 │   ├── vc.go            # 'vc' command (VSCode Server management)
+│   ├── sync.go          # 'sync' command (git master/main sync & cleanup)
 │   └── conf_cmd.go      # 'gen-default' command
 ├── internal/            # Internal packages
 │   └── merge/           # GitLab merge request logic
@@ -107,6 +109,7 @@ go test ./pkg/utils/...
 | `celo vc skill-all` | Kill all VSCode Server processes | - |
 | `celo vc clean` | Clean VSCode Server folders | `--keep`, `--yes` |
 | `celo gen-default` | Generate default config file | `--dst` |
+| `celo sync` | Switch to master/main, pull, and prune deleted branches | - |
 
 ## Configuration
 

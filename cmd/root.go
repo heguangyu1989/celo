@@ -31,6 +31,7 @@ func init() {
 	rootCmd.AddCommand(GetDockerCmd())
 	rootCmd.AddCommand(GetNetCmd())
 	rootCmd.AddCommand(GetBenchCmd())
+	rootCmd.AddCommand(GetSyncCmd())
 }
 
 func Execute() error {
