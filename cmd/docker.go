@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
-	"github.com/heguangyu1989/celo/pkg/p"
 	"github.com/heguangyu1989/celo/pkg/utils"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -62,8 +61,7 @@ func runDockerCheckCmd(cmd *cobra.Command, args []string) error {
 
 	// Check if docker command is available
 	if _, err := exec.LookPath("docker"); err != nil {
-		p.Error("Docker command not found. Please install Docker.")
-		return fmt.Errorf("docker not found: %w", err)
+		return fmt.Errorf("docker command not found: %w", err)
 	}
 
 	results := make([]imageCheckResult, 0, len(args))
@@ -93,7 +91,6 @@ func runDockerCheckCmd(cmd *cobra.Command, args []string) error {
 		printCheckResultsTable(results)
 
 	default:
-		p.Error(fmt.Sprintf("Unsupported output format: %s", output))
 		return fmt.Errorf("unsupported output format: %s", output)
 	}
 

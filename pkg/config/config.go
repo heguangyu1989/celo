@@ -33,13 +33,13 @@ func LoadConfig(path string) error {
 		if err != nil {
 			return err
 		}
-		case ".yaml", ".yml":
+	case ".yaml", ".yml":
 		err = yaml.Unmarshal(data, &C)
 		if err != nil {
 			return err
 		}
 	default:
-		return fmt.Errorf("unsupport file ext : %s", ext)
+		return fmt.Errorf("unsupported file extension: %s", ext)
 	}
 	return nil
 }
@@ -60,7 +60,7 @@ func SaveConfig(path string) error {
 			return err
 		}
 	default:
-		return fmt.Errorf("unsupport file ext : %s", ext)
+		return fmt.Errorf("unsupported file extension: %s", ext)
 	}
 	return os.WriteFile(path, data, 0600)
 }

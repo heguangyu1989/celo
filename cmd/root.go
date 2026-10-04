@@ -9,6 +9,9 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "celo",
 	Short: "Efficiency, at speed.",
+	// Errors are printed once in main; cobra must not print them or usage.
+	SilenceErrors: true,
+	SilenceUsage:  true,
 }
 
 func init() {

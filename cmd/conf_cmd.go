@@ -25,10 +25,8 @@ func runGenDefaultCmd(cmd *cobra.Command, args []string) error {
 	}
 	err = config.SaveConfig(dst)
 	if err != nil {
-		p.Error(fmt.Sprintf("write default config to %s failed : %v", dst, err))
-		return err
-	} else {
-		p.Success(fmt.Sprintf("write default config to %s success", dst))
+		return fmt.Errorf("write default config to %s: %w", dst, err)
 	}
+	p.Success(fmt.Sprintf("write default config to %s success", dst))
 	return nil
 }

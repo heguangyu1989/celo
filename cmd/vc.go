@@ -41,19 +41,19 @@ func getVCSkillAllCmd() *cobra.Command {
 			// 管道连接
 			pipe, err := psCmd.StdoutPipe()
 			if err != nil {
-				return fmt.Errorf("创建管道失败: %v", err)
+				return fmt.Errorf("create pipe failed: %w", err)
 			}
 			grepCmd.Stdin = pipe
 
 			// 启动命令
 			if err := psCmd.Start(); err != nil {
-				return fmt.Errorf("执行ps命令失败: %v", err)
+				return fmt.Errorf("run ps command failed: %w", err)
 			}
 
 			// 获取grep输出
 			output, err := grepCmd.Output()
 			if err != nil && err.Error() != "exit status 1" {
-				return fmt.Errorf("执行grep命令失败: %v", err)
+				return fmt.Errorf("run grep command failed: %w", err)
 			}
 
 			// 等待ps命令结束
@@ -117,13 +117,13 @@ func getVCCleanCmd() *cobra.Command {
 
 			homeDir, err := os.UserHomeDir()
 			if err != nil {
-				return fmt.Errorf("获取用户主目录失败: %v", err)
+				return fmt.Errorf("get user home dir failed: %w", err)
 			}
 
 			vscodeDir := filepath.Join(homeDir, ".vscode-server")
 			if _, err := os.Stat(vscodeDir); err != nil {
 				if os.IsNotExist(err) {
-					return fmt.Errorf(".vscode-server目录不存在: %s", vscodeDir)
+					return fmt.Errorf(".vscode-server directory does not exist: %s", vscodeDir)
 				}
 				return err
 			}
@@ -246,7 +246,7 @@ func analyzeCLIVersions(cliDir, lruPath string, keepCount int) ([]cleanupItem, e
 		if os.IsNotExist(err) {
 			return items, nil
 		}
-		return nil, fmt.Errorf("读取LRU文件失败: %v", err)
+		return nil, fmt.Errorf("read LRU file failed: %w", err)
 	}
 	defer func() {
 		_ = lruFile.Close()
@@ -254,12 +254,12 @@ func analyzeCLIVersions(cliDir, lruPath string, keepCount int) ([]cleanupItem, e
 
 	data, err := io.ReadAll(lruFile)
 	if err != nil {
-		return nil, fmt.Errorf("读取LRU内容失败: %v", err)
+		return nil, fmt.Errorf("read LRU file failed: %w", err)
 	}
 
 	var versions lruData
 	if err := json.Unmarshal(data, &versions); err != nil {
-		return nil, fmt.Errorf("解析LRU文件失败: %v", err)
+		return nil, fmt.Errorf("parse LRU file failed: %w", err)
 	}
 
 	// 检查cli目录是否存在
@@ -270,7 +270,7 @@ func analyzeCLIVersions(cliDir, lruPath string, keepCount int) ([]cleanupItem, e
 	// 遍历所有版本目录
 	entries, err := os.ReadDir(cliDir)
 	if err != nil {
-		return nil, fmt.Errorf("读取CLI目录失败: %v", err)
+		return nil, fmt.Errorf("read CLI directory failed: %w", err)
 	}
 
 	// 找出要保留的版本
@@ -499,12 +499,12 @@ func performCleanup(analysis *analysisResult, keepCount int) (int64, error) {
 func updateLRUFile(lruPath string, keepCount int) error {
 	file, err := os.ReadFile(lruPath)
 	if err != nil {
-		return fmt.Errorf("读取LRU文件失败: %v", err)
+		return fmt.Errorf("read LRU file failed: %w", err)
 	}
 
 	var versions lruData
 	if err := json.Unmarshal(file, &versions); err != nil {
-		return fmt.Errorf("解析LRU文件失败: %v", err)
+		return fmt.Errorf("parse LRU file failed: %w", err)
 	}
 	if len(versions) <= keepCount {
 		return nil
@@ -512,15 +512,15 @@ func updateLRUFile(lruPath string, keepCount int) error {
 
 	data, err := json.Marshal(versions[:keepCount])
 	if err != nil {
-		return fmt.Errorf("序列化LRU文件失败: %v", err)
+		return fmt.Errorf("marshal LRU file failed: %w", err)
 	}
 
 	backupPath := lruPath + ".backup"
 	if err := os.WriteFile(backupPath, file, 0644); err != nil {
-		return fmt.Errorf("备份LRU文件失败: %v", err)
+		return fmt.Errorf("backup LRU file failed: %w", err)
 	}
 	if err := os.WriteFile(lruPath, data, 0644); err != nil {
-		return fmt.Errorf("更新LRU文件失败: %v", err)
+		return fmt.Errorf("update LRU file failed: %w", err)
 	}
 	return nil
 }

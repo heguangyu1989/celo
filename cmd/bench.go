@@ -119,7 +119,6 @@ func runBenchHTTPCmd(cmd *cobra.Command, args []string) error {
 
 	config, err := buildBenchConfig(cmd, args[0])
 	if err != nil {
-		p.Error(err.Error())
 		return err
 	}
 
@@ -129,8 +128,7 @@ func runBenchHTTPCmd(cmd *cobra.Command, args []string) error {
 
 	if outputFile, _ := cmd.Flags().GetString("output-file"); outputFile != "" {
 		if err := writeBenchReport(outputFile, report); err != nil {
-			p.Error(fmt.Sprintf("Failed to write report: %v", err))
-			return err
+			return fmt.Errorf("write report: %w", err)
 		}
 		p.Success(fmt.Sprintf("Report written to %s", outputFile))
 	}
@@ -145,7 +143,6 @@ func runBenchHTTPCmd(cmd *cobra.Command, args []string) error {
 	case "table":
 		printBenchTable(results, summary, withBody)
 	default:
-		p.Error(fmt.Sprintf("Unsupported output format: %s", output))
 		return fmt.Errorf("unsupported output format: %s", output)
 	}
 

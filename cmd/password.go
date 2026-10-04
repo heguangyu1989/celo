@@ -63,13 +63,11 @@ func runPasswordCmd(cmd *cobra.Command, args []string) error {
 
 	// Validate parameters
 	if length <= 0 {
-		p.Error("Password length must be positive")
-		return fmt.Errorf("invalid length: %d", length)
+		return fmt.Errorf("password length must be positive, got %d", length)
 	}
 
 	if count <= 0 {
-		p.Error("Count must be positive")
-		return fmt.Errorf("invalid count: %d", count)
+		return fmt.Errorf("password count must be positive, got %d", count)
 	}
 
 	// Build password options
@@ -85,7 +83,6 @@ func runPasswordCmd(cmd *cobra.Command, args []string) error {
 	// Generate passwords
 	passwords, err := utils.GeneratePasswords(count, opts)
 	if err != nil {
-		p.Error(fmt.Sprintf("Failed to generate password: %v", err))
 		return err
 	}
 
@@ -103,7 +100,6 @@ func runPasswordCmd(cmd *cobra.Command, args []string) error {
 	case "json":
 		data, err := json.MarshalIndent(results, "", "  ")
 		if err != nil {
-			p.Error(fmt.Sprintf("Failed to marshal JSON: %v", err))
 			return err
 		}
 		fmt.Println(string(data))
@@ -111,7 +107,6 @@ func runPasswordCmd(cmd *cobra.Command, args []string) error {
 	case "yaml":
 		data, err := yaml.Marshal(results)
 		if err != nil {
-			p.Error(fmt.Sprintf("Failed to marshal YAML: %v", err))
 			return err
 		}
 		fmt.Println(string(data))
@@ -149,7 +144,6 @@ func runPasswordCmd(cmd *cobra.Command, args []string) error {
 		}
 
 	default:
-		p.Error(fmt.Sprintf("Unsupported output format: %s", output))
 		return fmt.Errorf("unsupported output format: %s", output)
 	}
 

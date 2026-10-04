@@ -3,6 +3,7 @@ package p
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/charmbracelet/lipgloss"
 	"gopkg.in/yaml.v3"
@@ -17,7 +18,7 @@ var infoStyle = lipgloss.NewStyle()
 var successStyle = lipgloss.NewStyle().Bold(true)
 
 func Error(data string) {
-	fmt.Println(errStyle.Render(data))
+	fmt.Fprintln(os.Stderr, errStyle.Render(data))
 }
 
 func Info(data string) {

@@ -21,7 +21,6 @@ Celo is a Go-based CLI tool designed for developer productivity. The name repres
 | CLI Framework | [spf13/cobra](https://github.com/spf13/cobra) |
 | TUI Components | [charmbracelet/bubbletea](https://github.com/charmbracelet/bubbletea), [charmbracelet/bubbles](https://github.com/charmbracelet/bubbles), [charmbracelet/lipgloss](https://github.com/charmbracelet/lipgloss) |
 | HTTP Client | [go-resty/resty](https://github.com/go-resty/resty) |
-| Logging | [sirupsen/logrus](https://github.com/sirupsen/logrus) |
 | YAML/JSON | [gopkg.in/yaml.v3](https://gopkg.in/yaml.v3) |
 | Testing | [stretchr/testify](https://github.com/stretchr/testify) |
 
@@ -144,9 +143,9 @@ The config file is loaded automatically on startup. Use `--config` flag to speci
 
 ### Error Handling
 
-- Return errors from command runners for centralized handling
-- Use `p.Error()` for styled error output
-- Log fatal errors only in `main.go`
+- Command runners return errors (`fmt.Errorf`, wrap with `%w`); do NOT print them locally — the root command sets `SilenceErrors`/`SilenceUsage` and `main.go` prints the error once via `p.Error()` and exits with code 1.
+- `p.Error()` writes to stderr and is reserved for non-fatal warnings inside commands (e.g. skipping one item in a loop).
+- Error message style: English, lowercase start, no space before colons, e.g. `fmt.Errorf("write report: %w", err)`.
 
 ### Output Formats
 

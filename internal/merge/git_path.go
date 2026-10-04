@@ -32,7 +32,7 @@ func ParsePath(inputUrl string, srcType string) (GitPathInfo, error) {
 	case GitTypeGitlab:
 		return parseGitlabPath(inputUrl)
 	}
-	return GitPathInfo{}, fmt.Errorf("can not match src type : %s", srcType)
+	return GitPathInfo{}, fmt.Errorf("cannot match src type: %s", srcType)
 }
 
 func parseGitlabPath(input string) (GitPathInfo, error) {
@@ -101,5 +101,5 @@ func parseGitlabPath(input string) (GitPathInfo, error) {
 }
 
 func getParseErr(input string, msg string) error {
-	return fmt.Errorf("parse input error %s , %s", input, msg)
+	return fmt.Errorf("parse input %s: %s", input, msg)
 }

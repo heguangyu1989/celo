@@ -52,5 +52,5 @@ func Merge(srcBranch string, targetBranch string, title string, tags []string) e
 }
 
 func getHttpStatusErr(resp *resty.Response) error {
-	return fmt.Errorf("request %s error with http code %d body %s", resp.Request.URL, resp.StatusCode(), resp.String())
+	return fmt.Errorf("request %s failed: http code %d, body: %s", resp.Request.URL, resp.StatusCode(), resp.String())
 }

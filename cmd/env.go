@@ -134,7 +134,7 @@ func runEnvListCmd(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("could not find all env files: %w", err)
 	}
 	if len(envFiles) == 0 {
-		p.Error("no env files found")
+		p.Info("no env files found")
 		return nil
 	}
 	items := make([]list.Item, 0, len(envFiles))

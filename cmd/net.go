@@ -70,12 +70,10 @@ func runNetPortCmd(cmd *cobra.Command, args []string) error {
 	// Parse all ports from arguments
 	ports, err := parsePorts(args)
 	if err != nil {
-		p.Error(fmt.Sprintf("Invalid port specification: %v", err))
 		return err
 	}
 
 	if len(ports) == 0 {
-		p.Error("No valid ports to check")
 		return fmt.Errorf("no valid ports")
 	}
 
@@ -91,7 +89,6 @@ func runNetPortCmd(cmd *cobra.Command, args []string) error {
 	case "table":
 		printPortResultsTable(results)
 	default:
-		p.Error(fmt.Sprintf("Unsupported output format: %s", output))
 		return fmt.Errorf("unsupported output format: %s", output)
 	}
 
